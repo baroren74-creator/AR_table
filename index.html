@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Mc Table AR Test</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #000;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 18px;
+      color: white;
+    }
+
+    .top-chip,
+    .bottom-chip {
+      align-self: center;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      max-width: min(92vw, 420px);
+      backdrop-filter: blur(6px);
+    }
+
+    .hint-box {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(72vw, 280px);
+      aspect-ratio: 1.2 / 1;
+      border: 3px dashed rgba(255, 255, 255, 0.9);
+      border-radius: 24px;
+      box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.08);
+      z-index: 9;
+      pointer-events: none;
+    }
+
+    .found {
+      color: #7CFFB2;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="top-chip">כוונו את המצלמה אל ה-marker של AR.js כדי לבדוק שהזיהוי עובד</div>
+    <div class="bottom-chip" id="statusText">מחפש marker...</div>
+  </div>
+
+  <div class="hint-box"></div>
+
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; colorManagement: true;"
+    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
+  >
+    <a-marker preset="hiro" id="hiroMarker">
+      <a-plane
+        position="0 0 0"
+        rotation="-90 0 0"
+        width="1.6"
+        height="1"
+        color="#ffffff"
+        material="opacity: 0.92"
+      ></a-plane>
+
+      <a-plane
+        position="0 0.01 0"
+        rotation="-90 0 0"
+        width="1.45"
+        height="0.85"
+        color="#db0007"
+        material="opacity: 0.96"
+      ></a-plane>
+
+      <a-text
+        value="MC TABLE AR"
+        position="0 0.02 0.18"
+        rotation="-90 0 0"
+        align="center"
+        width="2.8"
+        color="#ffbc0d"
+      ></a-text>
+
+      <a-text
+        value="ה-marker זוהה"
+        position="0 0.02 -0.02"
+        rotation="-90 0 0"
+        align="center"
+        width="2.4"
+        color="#ffffff"
+      ></a-text>
+
+      <a-box
+        position="-0.42 0.14 0"
+        depth="0.12"
+        height="0.24"
+        width="0.24"
+        color="#ffbc0d"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 3500; easing: linear"
+      ></a-box>
+
+      <a-cylinder
+        position="0 0.14 0"
+        radius="0.11"
+        height="0.24"
+        color="#ffffff"
+        animation="property: position; dir: alternate; dur: 900; loop: true; to: 0 0.2 0"
+      ></a-cylinder>
+
+      <a-sphere
+        position="0.42 0.14 0"
+        radius="0.13"
+        color="#ffbc0d"
+        animation="property: scale; dir: alternate; dur: 700; loop: true; to: 1.2 1.2 1.2"
+      ></a-sphere>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    const marker = document.getElementById('hiroMarker');
+    const statusText = document.getElementById('statusText');
+
+    let visible = false;
+
+    marker.addEventListener('markerFound', () => {
+      visible = true;
+      statusText.textContent = 'ה-marker זוהה ✔';
+      statusText.classList.add('found');
+    });
+
+    marker.addEventListener('markerLost', () => {
+      visible = false;
+      statusText.textContent = 'ה-marker יצא מהפריים';
+      statusText.classList.remove('found');
+    });
+
+    setInterval(() => {
+      if (!visible) {
+        statusText.textContent = 'מחפש marker...';
+        statusText.classList.remove('found');
+      }
+    }, 1500);
+  </script>
+</body>
+</html>
