@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mc Table Games</title>
 
 <style>
-body {margin:0;font-family:Arial;background:#ffbc0d}
-.screen {position:fixed;inset:0;display:flex;justify-content:center;align-items:center;background:#db0007;color:white}
-.hidden {display:none}
-.btn {padding:14px 20px;margin:6px;border:none;border-radius:20px;font-weight:bold}
-.game {position:fixed;inset:0}
-.item {position:absolute;width:70px;height:70px}
+body{margin:0;font-family:Arial;background:#ffbc0d}
+.screen{position:fixed;inset:0;display:flex;justify-content:center;align-items:center;background:#db0007;color:white}
+.hidden{display:none}
+.btn{padding:14px 20px;margin:6px;border:none;border-radius:20px;font-weight:bold}
+.game{position:fixed;inset:0}
+.item{position:absolute;width:70px;height:70px}
 </style>
 </head>
 
@@ -27,9 +27,9 @@ body {margin:0;font-family:Arial;background:#ffbc0d}
 <div id="lobby" class="screen hidden">
   <div>
     <h3>בחר משחק</h3>
-    <button class="btn" onclick="selectGame('catch')">🍟 תפוס</button>
-    <button class="btn" onclick="selectGame('bomb')">💣 פצצה</button>
-    <button class="btn" onclick="selectGame('reaction')">⚡ מי ראשון</button>
+    <button class="btn" onclick="chooseGame('catch')">🍟 תפוס</button>
+    <button class="btn" onclick="chooseGame('bomb')">💣 פצצה</button>
+    <button class="btn" onclick="chooseGame('reaction')">⚡ מי ראשון</button>
   </div>
 </div>
 
@@ -37,7 +37,7 @@ body {margin:0;font-family:Arial;background:#ffbc0d}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
  apiKey: "AIzaSyB9sgQBeHOxc9U3syWWtAiipoGQB8dE7Xg",
@@ -58,57 +58,55 @@ function show(id){
   document.getElementById(id).classList.remove("hidden");
 }
 
-window.createRoom = async () => {
+window.createRoom = async ()=>{
   await set(ref(db,"room"),{
     status:"lobby",
-    game:null,
-    score:{p1:0,p2:0}
+    gameType:null
   });
   show("lobby");
   subscribe();
 };
 
-window.selectGame = async (type) => {
+window.chooseGame = async(type)=>{
   await update(ref(db,"room"),{
     status:"playing",
-    game:type,
-    score:{p1:0,p2:0}
+    gameType:type
   });
 };
 
 function subscribe(){
   onValue(ref(db,"room"),snap=>{
-    const state = snap.val();
-    if(!state) return;
+    const state=snap.val();
+    if(!state)return;
 
     if(state.status==="lobby"){
       show("lobby");
     }
 
     if(state.status==="playing"){
-      startGame(state.game);
+      startGame(state.gameType);
     }
   });
 }
 
 function spawn(type){
-  if(!gameRunning) return;
+  if(!gameRunning)return;
 
-  const el = document.createElement("img");
+  const el=document.createElement("img");
   el.className="item";
 
   if(type==="catch") el.src="chips.png";
-  if(type==="bomb") el.src=Math.random()>0.2?"chips.png":"burger.png";
-  if(type==="reaction") el.src="ice cream.png";
+
+  if(type==="bomb"){
+    el.src=Math.random()>0.25 ? "chips.png" : "burger.png";
+  }
 
   el.style.left=Math.random()*80+"%";
   el.style.top=Math.random()*80+"%";
 
   el.onclick=()=>{
     if(type==="bomb" && el.src.includes("burger")){
-      update(ref(db,"room/score"),{p1:-1});
-    } else {
-      update(ref(db,"room/score"),{p1:1});
+      alert("לחצת פצצה 💣");
     }
     el.remove();
   };
@@ -133,7 +131,7 @@ function startGame(type){
       el.style.left="40%";
       el.style.top="40%";
       el.onclick=()=>{
-        alert("ניצחת!");
+        alert("ניצחת ⚡");
         gameRunning=false;
         show("lobby");
       };
@@ -144,7 +142,7 @@ function startGame(type){
     setTimeout(()=>{
       gameRunning=false;
       show("lobby");
-    },10000);
+    },8000);
   }
 }
 </script>
